@@ -95,6 +95,9 @@ void markTaskDone(int taskID) {
     }
     if (current->data->ID == taskID) {
         current->data->done = 1;
+    } else {
+        printf("Invalid ID, Task not found\n");
+        return;
     }
     printf("Task %s marked Done: %d\n", current->data->title, current->data->done);
     return;
