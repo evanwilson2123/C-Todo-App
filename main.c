@@ -101,8 +101,28 @@ void markTaskDone(int taskID) {
 }
 
 void saveToFile() {
-    // TODO
     
+    // Open the file
+    FILE *fp;
+    fp = fopen("tasks.txt", "w");
+    if (fp == NULL) {
+        printf("Could not open file 'tasks.txt' for writing.\n");
+        exit(1);
+    }
+
+    // - Iterate over each Task
+    Node* current = head;
+    while (current != NULL) {
+        fprintf(fp, "%d|%s|%s|%d\n",
+                current->data->ID,
+                current->data->title,
+                current->data->description,
+                current->data->done);
+        current = current->next;
+    }
+    
+    fclose(fp);
+    printf("Saved %d tasks to 'tasks.txt'\n", taskCount);
     return;
 }
 
