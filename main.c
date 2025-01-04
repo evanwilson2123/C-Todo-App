@@ -99,7 +99,7 @@ void markTaskDone(int taskID) {
         printf("Invalid ID, Task not found\n");
         return;
     }
-    printf("Task %s marked Done: %d\n", current->data->title, current->data->done);
+    printf("Task '%s' marked Done: %d\n", current->data->title, current->data->done);
     return;
 }
 
@@ -129,13 +129,88 @@ void saveToFile() {
     return;
 }
 
+// A function to load previously saved tasks into session
 void loadFromFile() {
-    // TODO
+    FILE *fp = fopen("tasks.txt", "r");
+    if (fp == NULL) {
+        printf("Could not open 'tasks.txt' for reading\n");
+        return;
+    }
+    freeAllTasks();
+    char line[512];
+    int maxID = 0;
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        // Remove trailing newline if present
+        line[strcspn(line, "\n")] ='\0';
+
+        // Split line by '|'
+        char *token = strtok(line, "|");
+        if (token == NULL) continue;
+        int id = atoi(token);
+        if (id > maxID) {
+            maxID = id;
+        }
+
+        char *title = strtok(NULL, "|");
+        if (title == NULL) continue;
+
+        char *desc = strtok(NULL, "|");
+        if (desc == NULL) continue;
+
+        char *doneStr = strtok(NULL, "|");
+        if (doneStr == NULL) continue;
+        int doneVal = atoi(doneStr);
+
+        // Allocate a new task
+        Task *newTask = (Task *)malloc(sizeof(Task));
+        if (!newTask) {
+            printf("Error: Could not allocate memory for Task.\n");
+            fclose(fp);
+            return;
+        }
+        newTask->ID = id;
+        newTask->done = doneVal;
+
+        // Safely copy title/description into the task
+        strncpy(newTask->title, title, sizeof(newTask->title) - 1);
+        newTask->title[sizeof(newTask->title) - 1] = '\0';
+
+        strncpy(newTask->description, desc, sizeof(newTask->description) - 1);
+        newTask->description[sizeof(newTask->description) - 1] = '\0';
+
+        // Create a new node for the linked list
+        Node *newNode = (Node *)malloc(sizeof(Node));
+        if (!newNode) {
+            printf("Error allocating memory for Node");
+            free(newTask);
+            fclose(fp);
+            return;
+        }
+        newNode->data = newTask;
+        newNode->next = NULL;
+
+        // Insert at head
+        newNode->next = head;
+        head = newNode;
+
+        taskCount = maxID - 1;    
+    }
+
+    fclose(fp);
+    printf("Loaded %d tasks from 'tasks.txt'.\n", taskCount + 1);
     return;
 }
 
 void freeAllTasks() {
-    // TODO
+    Node *current = head;
+    while (current != NULL) {
+        Node *temp = current->next;
+        free(current->data);
+        free(current);
+        current = temp;
+    }
+    head = NULL;
+    taskCount = 0;
     return;
 }
 
